@@ -8,6 +8,7 @@
         cd ..
         git clone https://github.com/siddharths067/oapi-blogger-fe.git
         cd oapi-blogger-fe
+        npm install
         npm start
         echo "open localhost:3000 in browser" 
 ```
