@@ -5,18 +5,18 @@ networks:
     driver: bridge
 
 services:
-  # web:
-  #   build: .
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
-  #   depends_on:
-  #     - db
-  #     - redis
-  #   environment:
-  #     PORT: 8080
-  #   networks:
-  #     - app-tier
+  web:
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+      - redis
+    environment:
+      PORT: 8080
+    networks:
+      - app-tier
   redis:
     image: redis:alpine
     ports:
