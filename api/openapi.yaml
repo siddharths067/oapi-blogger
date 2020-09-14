@@ -1,0 +1,216 @@
+openapi: 3.0.3
+info:
+  title: OpenAPI Blogger Service
+  description: A blogger service written in simple OpenAPI
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Localhost server for testing
+paths:
+  /signup:
+    post:
+      summary: Signup Endpoint
+      description: This is a signup endpoint for the user
+      operationId: signupPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        "200":
+          description: Signup Successful
+        "500":
+          description: Server couldn't register user
+      x-swagger-router-controller: Default
+  /login:
+    post:
+      summary: Login for users
+      description: This is the login server for users, returns X-API-KEY in response
+        header for authentication
+      operationId: loginPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        "200":
+          description: Login was successful
+          headers:
+            X-API-KEY:
+              style: simple
+              explode: false
+              schema:
+                type: string
+              example: akdfjadkljadklgjadglk
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        "401":
+          description: Not Authorized, Credentials invalid
+      x-swagger-router-controller: Default
+  /logout:
+    post:
+      summary: Logout of the server
+      description: This is the logout endpoint for the server
+      operationId: logoutPOST
+      responses:
+        "200":
+          description: Logout successful
+        "401":
+          description: Not Authorized to logout
+      security:
+      - ApiKeyAuth: []
+      x-swagger-router-controller: Default
+  /story:
+    post:
+      summary: Post a Story
+      description: Endpoint for posting a story by user
+      operationId: storyPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostStory'
+      responses:
+        "200":
+          description: Story successfully posted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStory'
+        "401":
+          description: Couldn't post the story
+      security:
+      - ApiKeyAuth: []
+      x-swagger-router-controller: Default
+  /feed/{offset}:
+    get:
+      summary: Feed Page
+      description: Story Title Pagination Endpoint
+      operationId: feedOffsetGET
+      parameters:
+      - name: offset
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          default: 0
+      responses:
+        "200":
+          description: Feed page successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StoryHead'
+                x-content-type: application/json
+        "401":
+          description: Not Authorized
+      security:
+      - ApiKeyAuth: []
+      x-swagger-router-controller: Default
+  /post/{id}:
+    get:
+      operationId: postIdGET
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Story fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStory'
+        "401":
+          description: Couldn't get the story
+      security:
+      - ApiKeyAuth: []
+      x-swagger-router-controller: Default
+components:
+  schemas:
+    UserCredentials:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+      example:
+        username: siddharths067
+        password: password
+    PostStory:
+      required:
+      - content
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+      example:
+        title: Title of the Story
+        content: The story of my life
+    GetStory:
+      allOf:
+      - $ref: '#/components/schemas/PostStory'
+      - required:
+        - id
+        - read
+        - viewers
+        type: object
+        properties:
+          id:
+            type: integer
+          viewers:
+            type: integer
+          read:
+            type: integer
+        example:
+          id: 3141
+          viewers: 10
+          read: 15
+    StoryHead:
+      required:
+      - id
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        id:
+          type: integer
+      example:
+        id: 0
+        title: title
+    TokenResponse:
+      required:
+      - X-API-KEY
+      type: object
+      properties:
+        X-API-KEY:
+          type: string
+          example: asadkjfnadkgmadofkapfo
+      example:
+        X-API-KEY: asadkjfnadkgmadofkapfo
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-KEY
+      in: header

@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: OpenAPI Blogger Service
+  description: A blogger service written in simple OpenAPI
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Localhost server for testing
+
+paths:
+  /signup:
+    post:
+      summary: Signup Endpoint
+      description: This is a signup endpoint for the user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref:  "#/components/schemas/UserCredentials"
+      responses:
+        '200':
+          description: Signup Successful
+        '500':
+          description: Server couldn't register user 
+  /login:
+    post:
+      summary: Login for users
+      description: This is the login server for users, returns X-API-KEY in response header for authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCredentials"
+      responses:
+        '200':
+          description: Login was successful
+          headers:
+            X-API-KEY:
+              schema:
+                type: string
+              example:  akdfjadkljadklgjadglk
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/TokenResponse"
+
+        '401':
+          description: Not Authorized, Credentials invalid
+  /logout:
+    post:
+      security:
+        - ApiKeyAuth: []
+      summary: Logout of the server
+      description: This is the logout endpoint for the server
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Not Authorized to logout
+  /story:
+    post:
+      security:
+        - ApiKeyAuth: []
+      summary: Post a Story
+      description: Endpoint for posting a story by user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref:  "#/components/schemas/PostStory"
+      responses:
+        '200':
+          description: Story successfully posted
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/GetStory"
+        '401':
+          description: Couldn't post the story
+  /feed/{offset}:
+    get:
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          required: true
+      summary: Feed Page
+      description: Story Title Pagination Endpoint
+      responses:
+        '200':
+          description: Feed page successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref:  "#/components/schemas/StoryHead"
+        '401':
+          description: Not Authorized
+  /post/{id}:
+    get:
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Story fetched
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/GetStory"
+        '401':
+          description: Couldn't get the story
+
+      
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+  schemas:
+    UserCredentials:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+      example:
+        username: siddharths067
+        password: password
+    PostStory:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+      example:
+        title: Title of the Story
+        content: The story of my life
+    GetStory:
+      allOf:
+        - $ref: "#/components/schemas/PostStory"
+        - type: object
+          required:
+            - viewers
+            - read
+            - id
+          properties:
+            id:
+              type: integer
+            viewers:
+              type: integer
+            read:
+              type: integer
+          example:
+            id: 3141
+            viewers: 10
+            read: 15
+    StoryHead:
+      type: object
+      required:
+        - title
+        - id
+      properties:
+        title:
+          type: string
+        id:
+          type: integer
+    TokenResponse:
+      type: object
+      required:
+        - X-API-KEY
+      properties:
+        X-API-KEY:
+          type: string
+          example: asadkjfnadkgmadofkapfo
+
+
