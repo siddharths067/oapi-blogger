@@ -7,7 +7,7 @@ networks:
 services:
   web:
     build: .
-    restart: always
+    restart: on-failure
     ports:
       - 8080:8080
     depends_on:
