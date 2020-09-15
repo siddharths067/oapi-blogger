@@ -7,7 +7,7 @@ module.exports = {
         return shaSum.update(value).digest(`hex`);
     },
     generateApiToken : function (username, value){
-        const client = redis.createClient();
+        const client = redis.createClient(6379, `redis`);
         return client.set(value, username).then(status => {
             // 24 Hours expiration
             return client.expire(value, 60*60*24)
@@ -15,7 +15,7 @@ module.exports = {
     },
     isAuthenticated: function(value){
         console.log(value);
-        const client = redis.createClient();
+        const client = redis.createClient(6379, `redis`);
         return client.get(value).then(result => {
             // console.log(result);
             if(result === `null`)
@@ -24,11 +24,11 @@ module.exports = {
         });
     },
     removeUser: function(value) {
-        const client = redis.createClient();
+        const client = redis.createClient(6379, `redis`);
         return client.unlink(value)
     },
     getUser: function(value){
-        const client = redis.createClient();
+        const client = redis.createClient(6379, `redis`);
         return client.get(value);
     }
 };
